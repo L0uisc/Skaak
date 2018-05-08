@@ -16,9 +16,10 @@ bool isGeldig(const std::string skuif)
         return true;
     }
     else
+    {
         std::cout << "Ongeldige toevoer: " + skuif + ". Probeer weer!\n\n";
-
         return false;
+    }
 }
 
 std::string krySkuif(const bool isWit, char stukke[sylengte][sylengte])
@@ -28,11 +29,7 @@ std::string krySkuif(const bool isWit, char stukke[sylengte][sylengte])
     do
     {
         // Bepaal watter kleur volgende moet skuif om die spelers te herinner.
-        std::string kleur { "WIT" };
-        if (isWit)
-            kleur = "WIT";
-        else
-            kleur = "SWART";
+        std::string kleur { (isWit) ? "WIT" : "SWART" };
 
         std::cout << kleur << " skuif: ";
         std::cin >> skuif;
@@ -71,12 +68,7 @@ void skryfSkuif(const bool isSwart, const std::string skuif)
 {
     static int skuiwe { 1 };
 
-    std::string formattering { "" };
-
-    if (!isSwart)
-        formattering = "";
-    else
-        formattering = "...\t";
+    std::string formattering { (isSwart) ? ("...\t") : "" };
 
     std::cout << "\t" << skuiwe << ".\t" << formattering << skuif << "\n\n";
 
