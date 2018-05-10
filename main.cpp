@@ -18,7 +18,9 @@ int main()
     { leeg }
     };
 
-    std::cout << "Welkom by my skaakspel! Gee jou skuiwe in standaardnotasie (bv. Txg4)\n\n\n";
+    std::cout << "Welkom by my skaakspel! Gee jou skuiwe in standaardnotasie, bv.:\n\n"
+                 "e4\t Dh5\t TXg4\t e4Xd5\t f8=D\t 0-0\t e5Xd5 e.p.\n"
+                 "Th1-e1\t Th4+\t Kf4++\t c7 mat\t d2 pat\t Gee oor.\n\n\n";
 
     bool isWit { true };
     tekenBord(isWit, stukke);
