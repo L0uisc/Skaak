@@ -17,14 +17,17 @@ bool isStuk(const char &skuif)
     return ((skuif == 'K') || (skuif == 'D') || (skuif == 'T') || (skuif == 'R') || (skuif == 'L'));
 }
 
-bool isKoordinaat(const std::string &koordinaat)
+bool isKoordinaat(const std::string &koordinaat, bool &isRy)
 {
     const char ry { koordinaat[0]};
     const char gelid { koordinaat[1]};
-    return ((ry == 'a') || (ry == 'b') || (ry == 'c') || (ry == 'd') ||
-            (ry == 'e') || (ry == 'f') || (ry == 'g') || (ry == 'h')) &&
-           ((gelid == '1') || (gelid == '2') || (gelid == '3') || (gelid == '4') ||
-            (gelid == '5') || (gelid == '6') || (gelid == '7') || (gelid == '8'));
+
+    isRy        =   (ry == 'a') || (ry == 'b') || (ry == 'c') || (ry == 'd') ||
+                    (ry == 'e') || (ry == 'f') || (ry == 'g') || (ry == 'h');
+    bool isGelid {  (gelid == '1') || (gelid == '2') || (gelid == '3') || (gelid == '4') ||
+                    (gelid == '5') || (gelid == '6') || (gelid == '7') || (gelid == '8') };
+
+    return ((isRy) && (isGelid));
 }
 
 bool isBuit(const char &buit)
@@ -97,90 +100,88 @@ bool isGeldig(const std::string &skuif, const bool &isWit)
 
     Karakter vorige { Karakter::BEGIN };        //  Enumerator hou tred met watter soort karakter die vorige karakter
                                                 //  in die skuif was.
+    int koordinaatTal { 0 };
+    int buitOfKoppeltekenTal { 0 };
+
     for (int i { 0 }; i < skuifLengte; ++i)
     {
+        bool isRy { false };
+
         switch (vorige)
         {
             case Karakter::BEGIN:   //  Voer uit as huidige karakter (skuif[i]) die eerste karakter van die string is.
-            {
-                isGeldig = isRokeer(skuif) || isOorgee(skuif) || isStuk(skuif[i]) || isKoordinaat(skuif.substr(i, 2));
+                isGeldig =  isRokeer(skuif) || isOorgee(skuif) || isStuk(skuif[i]) ||
+                            (isKoordinaat(skuif.substr(i, 2), isRy) && !(koordinaatTal > 2));
                 break;
-            }
+
             case Karakter::STUK:    // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
-                isGeldig = isKoordinaat(skuif.substr(i, 2)) || isBuit(skuif[i]);
+                isGeldig = (isKoordinaat(skuif.substr(i, 2), isRy) && koordinaatTal < 2) || isBuit(skuif[i]);
                 break;
-            }
-            case Karakter::KOORDINAAT:  // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
-                isGeldig = isBuit(skuif[i]) || isKoppelteken(skuif[i]) || isSpasie(skuif[i]) ||
-                           isIsGelykAan(skuif[i]) || isSkaak(skuif[i]);
+
+            case Karakter::KOORDINAAT:  // Voer uit as huidige karakter (skuif[i]) op 'n koordinaat volg.
+                isGeldig = ((isBuit(skuif[i]) || isKoppelteken(skuif[i])) && buitOfKoppeltekenTal < 1)
+                || isSpasie(skuif[i]) || isIsGelykAan(skuif[i]) || isSkaak(skuif[i]);
                 break;
-            }
-            case Karakter::BUIT:    // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
-                isGeldig = isKoordinaat(skuif.substr(i, 2));
+
+            case Karakter::BUIT:    // Voer uit as huidige karakter (skuif[i]) op 'n 'X' volg.
+                isGeldig = isKoordinaat(skuif.substr(i, 2), isRy) && koordinaatTal < 2;
                 break;
-            }
-            case Karakter::KOPPELTEKEN: // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
-                isGeldig = isKoordinaat(skuif.substr(i, 2));
+
+            case Karakter::KOPPELTEKEN: // Voer uit as huidige karakter (skuif[i]) op 'n koppelteken volg.
+                isGeldig = isKoordinaat(skuif.substr(i, 2), isRy) && koordinaatTal < 2;
                 break;
-            }
-            case Karakter::ISGELYKAAN:  // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
-                isGeldig = isLaasteGelid(skuif[i - 2], isWit) && isStuk(skuif[i]);
-                if (!isGeldig)
+
+            case Karakter::ISGELYKAAN:  // Voer uit as huidige karakter (skuif[i]) op 'n '=' volg.
+                isGeldig = isLaasteGelid(skuif[i - 2], isWit) && isStuk(skuif[i]) && ((skuifLengte - i) == 1);
+                if (!isLaasteGelid(skuif[i - 2], isWit))
                     i -= 2;
                 break;
-            }
-            case Karakter::SKAAK:   // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
-                isGeldig = isSkaak(skuif[i]) && (i == skuifLengte - 1);
+
+            case Karakter::SKAAK:   // Voer uit as huidige karakter (skuif[i]) op 'n '+' volg.
+                isGeldig = isSkaak(skuif[i]) && ((skuifLengte - i) == 1);
                 break;
-            }
-            case Karakter::SPASIE:  // Voer uit as huidige karakter (skuif[i]) op 'n stuk volg.
-            {
+
+            case Karakter::SPASIE:  // Voer uit as huidige karakter (skuif[i]) op 'n spasie volg.
                 isGeldig = (isEnPassant(skuif.substr(i, 4)) && (skuifLengte - i) == 4) || (isMat(skuif.substr(i, 3))
                             && (skuifLengte - i) == 3) || (isPat(skuif.substr(i, 3)) && (skuifLengte - i) == 3);
                 break;
-            }
         }
-        if (isRokeer(skuif) || isOorgee(skuif) || isEnPassant(skuif.substr(i, 4)) || isMat(skuif.substr(i, 3)) ||
-            isPat(skuif.substr(i, 3)))
-            break;
-
         if (isGeldig)
         {
-            //  Bepaal watter soort karakter pas beskou is.
-            if (isStuk(skuif[i]))
-                vorige = Karakter::STUK;
+            if (isRokeer(skuif) || isOorgee(skuif) || isEnPassant(skuif.substr(i, 4))
+                || isMat(skuif.substr(i, 3)) || isPat(skuif.substr(i, 3)))
+                break;
 
-            else if (isKoordinaat(skuif.substr(i, 2)))
+            //  Bepaal watter soort karakter pas beskou is.
+            if (isKoordinaat(skuif.substr(i, 2), isRy))
             {
                 vorige = Karakter::KOORDINAAT;
+                ++koordinaatTal;
                 ++i;    //  Skuif die posisie in die string 'n ekstra plek aan omdat die volgende karakter reeds
                         //  getoets is.
             }
             else if (isBuit(skuif[i]))
+            {
                 vorige = Karakter::BUIT;
-
+                ++buitOfKoppeltekenTal;
+            }
             else if (isKoppelteken(skuif[i]))
+            {
                 vorige = Karakter::KOPPELTEKEN;
-
+                ++buitOfKoppeltekenTal;
+            }
             else if (isSpasie(skuif[i]))
                 vorige = Karakter::SPASIE;
-
             else if (isIsGelykAan(skuif[i]))
                 vorige = Karakter::ISGELYKAAN;
-
             else if (isSkaak(skuif[i]))
                 vorige = Karakter::SKAAK;
+            else if (isStuk(skuif[i]))
+                vorige = Karakter::STUK;
         }
         else
         {
-            if (skuif[i] == 'a' || skuif[i] == 'b' || skuif[i] == 'c' || skuif[i] == 'd' ||
-                skuif[i] == 'e' || skuif[i] == 'f' || skuif[i] == 'g' || skuif[i] == 'h')
+            if (isRy && koordinaatTal < 2)
                 ++i;
             fout = std::to_string(i + 1) + " e karakter foutief";
             std::cout << "Ongeldige toevoer: " + fout + ". Probeer weer!\n\n";
@@ -193,12 +194,12 @@ bool isGeldig(const std::string &skuif, const bool &isWit)
 std::string krySkuif(const bool &isWit, char stukke[sylengte][sylengte])
 {
     std::string skuif { "" };
-    bool isReg { false };       //  Dui aan wanneer die skuif wettig EN geldig is.
+    bool isWettigEnGeldig { false };       //  Dui aan wanneer die skuif wettig EN geldig is.
 
     do
     {
         // Bepaal watter kleur volgende moet skuif om die spelers te herinner.
-        std::string kleur { (isWit) ? "WIT" : "SWART" };
+        const std::string kleur { (isWit) ? "WIT" : "SWART" };
         std::cout << kleur << " skuif: ";
         std::getline(std::cin, skuif);
         std::cout << "\n";
@@ -207,11 +208,11 @@ std::string krySkuif(const bool &isWit, char stukke[sylengte][sylengte])
             if (isWettig(skuif, stukke))
                 {
                     doenSkuif(isWit, stukke);
-                    isReg = true;
+                    isWettigEnGeldig = true;
                     return skuif;
                 }
     }
-    while (!isReg);
+    while (!isWettigEnGeldig);
 }
 
 void doenSkuif(const bool &isWit, char stukke[sylengte][sylengte])
@@ -235,7 +236,7 @@ void skryfSkuif(const bool &isSwart, const std::string &skuif)
 {
     static int skuiwe { 1 };
 
-    std::string formattering { (isSwart) ? ("...\t") : "" };
+    const std::string formattering { (isSwart) ? ("...\t") : "" };
 
     std::cout << "\t" << skuiwe << ".\t" << formattering << skuif << "\n\n";
 
