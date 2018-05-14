@@ -45,7 +45,7 @@ bool isSpasie(const char &spasie)
     return (spasie == ' ');
 }
 
-bool isIsGelykAan(const char &isGelykAan)
+bool isPromoveer(const char &isGelykAan)
 {
     return (isGelykAan == '=');
 }
@@ -120,7 +120,7 @@ bool isGeldig(const std::string &skuif, const bool &isWit)
 
             case Karakter::KOORDINAAT:  // Voer uit as huidige karakter (skuif[i]) op 'n koordinaat volg.
                 isGeldig = ((isBuit(skuif[i]) || isKoppelteken(skuif[i])) && buitOfKoppeltekenTal < 1)
-                || isSpasie(skuif[i]) || isIsGelykAan(skuif[i]) || isSkaak(skuif[i]);
+                || isSpasie(skuif[i]) || isPromoveer(skuif[i]) || isSkaak(skuif[i]);
                 break;
 
             case Karakter::BUIT:    // Voer uit as huidige karakter (skuif[i]) op 'n 'X' volg.
@@ -172,7 +172,7 @@ bool isGeldig(const std::string &skuif, const bool &isWit)
             }
             else if (isSpasie(skuif[i]))
                 vorige = Karakter::SPASIE;
-            else if (isIsGelykAan(skuif[i]))
+            else if (isPromoveer(skuif[i]))
                 vorige = Karakter::ISGELYKAAN;
             else if (isSkaak(skuif[i]))
                 vorige = Karakter::SKAAK;
