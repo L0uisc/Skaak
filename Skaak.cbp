@@ -34,9 +34,12 @@
 		</Compiler>
 		<Unit filename="bord.cpp" />
 		<Unit filename="bord.h" />
+		<Unit filename="konstantes.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="skuif.cpp" />
 		<Unit filename="skuif.h" />
+		<Unit filename="stukke.cpp" />
+		<Unit filename="stukke.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
