@@ -1,27 +1,26 @@
 #ifndef SKUIF_H
 #define SKUIF_H
-#include "bord.h"
+#include "konstantes.h"
+#include "stukke.h"
 
-void doenSkuif(const bool &isWit, char stukke[sylengte][sylengte]);
-void skryfSkuif(const bool &isWit, const std::string &skuif);
+void doenSkuif(const std::string &skuif, bool isWit, Stuk *stukke);
+void skryfSkuif(bool isSwart, const std::string &skuif);
 
-std::string krySkuif(const bool &isWit, char stukke[sylengte][sylengte]);
+std::string krySkuif(bool isWit, const Stuk *stukke);
 
-bool isSpelVerby(bool &isWit, const char stukke[sylengte][sylengte]);
-
-bool isWettig(const std::string &skuif, const char stukke[sylengte][sylengte]);
-bool isGeldig(const std::string &skuif, const bool &isWit);
+bool isWettig(const std::string &skuif, const Stuk *stukke);
+bool isGeldig(const std::string &skuif, bool isWit);
 
 bool isRokeer(const std::string &skuif);
 bool isOorgee(const std::string &skuif);
-bool isStuk(const char &skuif);
+bool isStuk(char skuif);
 bool isKoordinaat(const std::string &koordinaat);
-bool isBuit(const char &buit);
-bool isKoppelteken(const char &koppelteken);
-bool isSpasie(const char &spasie);
-bool isIsGelykAan(const char &isGelykAan);
-bool isLaasteGelid(const char &gelid, const bool &isWit);
-bool isSkaak(const char &skaak);
+bool isBuit(char buit);
+bool isKoppelteken(char koppelteken);
+bool isSpasie(char spasie);
+bool isPromoveer(char isGelykAan);
+bool isLaasteGelid(char gelid, bool isWit);
+bool isSkaak(char skaak);
 bool isEnPassant(const std::string &enPassant);
 bool isMat(const std::string &mat);
 bool isPat(const std::string &pat);
