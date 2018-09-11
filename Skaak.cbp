@@ -32,6 +32,8 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="../InputValidationRoutines.cpp" />
+		<Unit filename="../InputValidationRoutines.h" />
 		<Unit filename="bord.cpp" />
 		<Unit filename="bord.h" />
 		<Unit filename="konstantes.h" />

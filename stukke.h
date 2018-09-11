@@ -6,17 +6,18 @@ struct Posisie;
 
 struct Stuk
 {
-    char soort;
+    Soort soort;
+    bool isWit;
     Posisie *posisie;
 };
 
 struct Posisie
 {
-    int ry;
-    int gelid;
+    Koordinaat koordinaat;
     Stuk *stuk;
 };
 
-void inisialiseerStukke(Stuk *stukke, Posisie *posisies);
+void inisialiseerStukke(Stuk *stukke, Posisie **posisies);
+void ruimStukkeOp(Posisie **posisies);
 
 #endif // STUKKE_H_INCLUDED

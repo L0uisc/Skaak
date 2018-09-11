@@ -1,62 +1,42 @@
 #include "stukke.h"
 
-enum class Stukke
+Soort bepaalSoort(int i, int gelid)
 {
-    TORING,
-    RUITER,
-    LOPER,
-    DAME,
-    KONING
-};
-
-Stukke bepaalStuk(int i)
-{
-    int ry = i % 8;
-    switch (ry < (8 - ry) ? ry : 7 - ry)
-    {
-        case 0: return Stukke::TORING;
-        case 1: return Stukke::RUITER;
-        case 2: return Stukke::LOPER;
-        case 3: return Stukke::DAME;
-        case 4: return Stukke::KONING;
-    }
-}
-
-char bepaalSoort(int i)
-{
-    switch (i / 8)
+    int ry = i % aantalRye;
+    switch (gelid < 2 ? gelid : 3 - gelid)
     {
     case 0:
-        switch (bepaalStuk(i))
+        switch (ry < 5 ? ry : (aantalRye - ry) - 1)
         {
-        case Stukke::TORING:    return 'T';
-        case Stukke::RUITER:    return 'R';
-        case Stukke::LOPER:     return 'L';
-        case Stukke::DAME:      return 'D';
-        case Stukke::KONING:    return 'K';
+        case 0:     return Soort::TORING;
+        case 1:     return Soort::RUITER;
+        case 2:     return Soort::LOPER;
+        case 3:     return Soort::DAME;
+        case 4:     return Soort::KONING;
         }
-    case 1:     return 'P';
-    case 2:     return 'p';
-    case 3:
-        switch (bepaalStuk(i))
-        {
-        case Stukke::TORING:    return 't';
-        case Stukke::RUITER:    return 'r';
-        case Stukke::LOPER:     return 'l';
-        case Stukke::DAME:      return 'd';
-        case Stukke::KONING:    return 'k';
-        }
+    default:        return Soort::PION;
     }
 }
 
-void inisialiseerStukke(Stuk *stukke, Posisie *posisies)
+void inisialiseerStukke(Stuk *stukke, Posisie **posisies)
 {
     for (int i { 0 }; i < aantalStukke; ++i)
     {
-        stukke[i].soort = bepaalSoort(i);
-        stukke[i].posisie = &posisies[i];
-        posisies[i].ry = (i + 1) % 8;
-        posisies[i].gelid = (((i / 8) < 2) ? ((i / 8) + 1) : (i / 8) + 5);
-        posisies[i].stuk = &stukke[i];
+        int gelid { i / aantalRye };
+
+        posisies[i] = new Posisie;
+        posisies[i]->koordinaat.ry = (i % aantalRye) + 1;
+        posisies[i]->koordinaat.gelid = gelid < 2 ? (gelid + 1) : gelid + 5;
+        posisies[i]->stuk = &stukke[i];
+
+        stukke[i].soort = bepaalSoort(i, gelid);
+        stukke[i].isWit = (gelid < 2);
+        stukke[i].posisie = posisies[i];
     }
+}
+
+void ruimStukkeOp(Posisie **posisies)
+{
+    for (int i { 0 }; i < aantalStukke; ++i)
+        delete posisies[i];
 }

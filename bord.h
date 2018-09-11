@@ -3,6 +3,6 @@
 #include "konstantes.h"
 #include "stukke.h"
 
-void tekenBord(bool isWit, Posisie *posisies);
+void tekenBord(bool isWit, Posisie **posisies);
 
 #endif // BORD_H

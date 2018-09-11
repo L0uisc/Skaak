@@ -3,25 +3,13 @@
 #include "konstantes.h"
 #include "stukke.h"
 
-void doenSkuif(const std::string &skuif, bool isWit, Stuk *stukke);
+void doenSkuif(bool isWit, const std::string &skuif, Stuk *stukke, Posisie **posisies);
 void skryfSkuif(bool isSwart, const std::string &skuif);
 
-std::string krySkuif(bool isWit, const Stuk *stukke);
+const std::string valideerEnDoenSkuif(bool isWit, Stuk *stukke, Posisie **posisies);
 
-bool isWettig(const std::string &skuif, const Stuk *stukke);
-bool isGeldig(const std::string &skuif, bool isWit);
-
-bool isRokeer(const std::string &skuif);
 bool isOorgee(const std::string &skuif);
-bool isStuk(char skuif);
-bool isKoordinaat(const std::string &koordinaat);
-bool isBuit(char buit);
-bool isKoppelteken(char koppelteken);
-bool isSpasie(char spasie);
-bool isPromoveer(char isGelykAan);
-bool isLaasteGelid(char gelid, bool isWit);
 bool isSkaak(char skaak);
-bool isEnPassant(const std::string &enPassant);
 bool isMat(const std::string &mat);
 bool isPat(const std::string &pat);
 
