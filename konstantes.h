@@ -1,23 +1,15 @@
 #ifndef KONSTANTES_H
 #define KONSTANTES_H
 
-enum class Soort
-{
-    TORING,
-    RUITER,
-    LOPER,
-    DAME,
-    KONING,
-    PION
-};
+using uint_t = unsigned int;
 
-struct Koordinaat
-{
-    int ry;
-    int gelid;
-};
+// 'n Skaakbord is 8x8 met twee ekstra rye vir koordinaatletters en -syfers.
+constexpr uint_t g_sylengte { 10 };
 
-constexpr int aantalRye { 8 };                  // Die aantal rye op 'n skaakbord.
-constexpr int aantalStukke { aantalRye * 4 };   // Die totale aantal stukke op die bord aan die begin van elke spel.
+// Die aantal rye op 'n skaakbord.
+constexpr uint_t g_aantalRye { 8 };
+
+// Die totale aantal stukke op die bord aan die begin van elke spel.
+constexpr uint_t g_aantalStukke { g_aantalRye * 4 };
 
 #endif // KONSTANTES_H

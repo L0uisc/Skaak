@@ -1,42 +1,58 @@
 #include "stukke.h"
 
-Soort bepaalSoort(int i, int gelid)
+Soort bepaalSoort(uint_t i, uint_t gelid)
 {
-    int ry = i % aantalRye;
-    switch (gelid < 2 ? gelid : 3 - gelid)
+    uint_t ry = i % g_aantalRye;
+    switch (gelid < 2u ? gelid : 3u - gelid)
     {
-    case 0:
-        switch (ry < 5 ? ry : (aantalRye - ry) - 1)
+    case 0u:
+        switch (ry < 5u ? ry : (g_aantalRye - ry) - 1u)
         {
-        case 0:     return Soort::TORING;
-        case 1:     return Soort::RUITER;
-        case 2:     return Soort::LOPER;
-        case 3:     return Soort::DAME;
-        case 4:     return Soort::KONING;
+        case 0u:    return Soort::TORING;
+        case 1u:    return Soort::RUITER;
+        case 2u:    return Soort::LOPER;
+        case 3u:    return Soort::DAME;
+        case 4u:    return Soort::KONING;
+        default:    return Soort::ONBEKEND;
         }
     default:        return Soort::PION;
     }
 }
 
-void inisialiseerStukke(Stuk *stukke, Posisie **posisies)
+Soort bepaalSoort(char letter)
 {
-    for (int i { 0 }; i < aantalStukke; ++i)
+    switch (letter)
     {
-        int gelid { i / aantalRye };
-
-        posisies[i] = new Posisie;
-        posisies[i]->koordinaat.ry = (i % aantalRye) + 1;
-        posisies[i]->koordinaat.gelid = gelid < 2 ? (gelid + 1) : gelid + 5;
-        posisies[i]->stuk = &stukke[i];
-
-        stukke[i].soort = bepaalSoort(i, gelid);
-        stukke[i].isWit = (gelid < 2);
-        stukke[i].posisie = posisies[i];
+        case 'T':   return Soort::TORING;
+        case 'R':   return Soort::RUITER;
+        case 'L':   return Soort::LOPER;
+        case 'D':   return Soort::DAME;
+        case 'K':   return Soort::KONING;
+        default:    return Soort::PION;
     }
 }
 
-void ruimStukkeOp(Posisie **posisies)
+char bepaalLetter (const Stuk *stuk)
 {
-    for (int i { 0 }; i < aantalStukke; ++i)
-        delete posisies[i];
+    switch (stuk->soort)
+    {
+        case Soort::TORING: return stuk->isWit ? 'T' : 't';
+        case Soort::RUITER: return stuk->isWit ? 'R' : 'r';
+        case Soort::LOPER:  return stuk->isWit ? 'L' : 'l';
+        case Soort::DAME:   return stuk->isWit ? 'D' : 'd';
+        case Soort::KONING: return stuk->isWit ? 'K' : 'k';
+        case Soort::PION:   return stuk->isWit ? 'P' : 'p';
+        default:            return 0;
+    }
+}
+
+void inisialiseerStukke(std::array<Stuk, g_aantalStukke> &stukke)
+{
+    for (uint_t i { 0u }; i < g_aantalStukke; ++i)
+    {
+        uint_t gelid { i / g_aantalRye };
+
+        stukke.at(i).soort = bepaalSoort(i, gelid);
+        stukke.at(i).isWit = (gelid < 2u);
+    }
 }

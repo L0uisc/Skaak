@@ -1,23 +1,28 @@
-#ifndef STUKKE_H_INCLUDED
-#define STUKKE_H_INCLUDED
+#ifndef STUKKE_H
+#define STUKKE_H
+
+#include <array>
 #include "konstantes.h"
 
-struct Posisie;
+enum class Soort
+{
+    TORING,
+    RUITER,
+    LOPER,
+    DAME,
+    KONING,
+    PION,
+    ONBEKEND
+};
 
 struct Stuk
 {
     Soort soort;
     bool isWit;
-    Posisie *posisie;
 };
 
-struct Posisie
-{
-    Koordinaat koordinaat;
-    Stuk *stuk;
-};
+void inisialiseerStukke(std::array<Stuk, g_aantalStukke> &stukke);
+char bepaalLetter(const Stuk *stuk);
+Soort bepaalSoort(char letter);
 
-void inisialiseerStukke(Stuk *stukke, Posisie **posisies);
-void ruimStukkeOp(Posisie **posisies);
-
-#endif // STUKKE_H_INCLUDED
+#endif // STUKKE_H

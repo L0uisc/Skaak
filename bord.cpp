@@ -1,106 +1,84 @@
 #include <iostream>
+#include <array>
 #include "bord.h"
 
-constexpr int sylengte { 10 };      // 'n Skaakbord is 8x8 met twee ekstra rye vir
-                                    // koordinaatletters en -syfers.
-
-constexpr char bord[][sylengte]     // 'n " " stel 'n swart blokkie voor en 'n "W" 'n wit blokkie.
+void inisialiseerBord(std::array<std::array<Blokkie, g_sylengte>,g_sylengte> &bord,
+                      std::array<Stuk, g_aantalStukke> &stukke)
 {
-    { ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', ' ' },
-    { '1', ' ', 'W', ' ', 'W', ' ', 'W', ' ', 'W', '1' },
-    { '2', 'W', ' ', 'W', ' ', 'W', ' ', 'W', ' ', '2' },
-    { '3', ' ', 'W', ' ', 'W', ' ', 'W', ' ', 'W', '3' },
-    { '4', 'W', ' ', 'W', ' ', 'W', ' ', 'W', ' ', '4' },
-    { '5', ' ', 'W', ' ', 'W', ' ', 'W', ' ', 'W', '5' },
-    { '6', 'W', ' ', 'W', ' ', 'W', ' ', 'W', ' ', '6' },
-    { '7', ' ', 'W', ' ', 'W', ' ', 'W', ' ', 'W', '7' },
-    { '8', 'W', ' ', 'W', ' ', 'W', ' ', 'W', ' ', '8' },
-    { ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', ' ' }
-};
-char bepaalLetter (const Stuk *stuk)
-{
-    switch (stuk->soort)
+    for (uint_t gelid { 0 }; gelid < g_sylengte; ++gelid)
     {
-        case Soort::TORING: return stuk->isWit ? 'T' : 't';
-        case Soort::RUITER: return stuk->isWit ? 'R' : 'r';
-        case Soort::LOPER:  return stuk->isWit ? 'L' : 'l';
-        case Soort::DAME:   return stuk->isWit ? 'D' : 'd';
-        case Soort::KONING: return stuk->isWit ? 'K' : 'k';
-        case Soort::PION:   return stuk->isWit ? 'P' : 'p';
-        default:            return '0';
+        for (uint_t ry { 0 }; ry < g_sylengte; ++ry)
+        {
+            if (gelid > 0 && gelid < g_sylengte - 1)
+            {
+                if (ry > 0 && ry < g_sylengte - 1)
+                {
+                    bord.at(gelid).at(ry).agtergrond = (gelid + ry) % 2 ? 'W' : ' ';
+
+                    if (gelid <= 2 || gelid >= 7)
+                    {
+                        uint_t stukIndeks { ((gelid <= 2 ? gelid :
+                            (gelid - 4)) - 1) * g_aantalRye + ry - 1 };
+                        bord.at(gelid).at(ry).stuk = &stukke.at(stukIndeks);
+                        continue;
+                    }
+                }
+                else
+                    bord.at(gelid).
+                        at(ry).agtergrond =
+                        gelid + '1' - 1;
+            }
+            else
+            {
+                if (ry > 0 && ry < g_sylengte - 1)
+                {
+                    bord.at(gelid).
+                        at(ry).agtergrond =
+                        ry + 'a' - 1;
+                }
+                else
+                {
+                    bord.at(gelid).
+                        at(ry).agtergrond = ' ';
+                }
+            }
+
+            bord.at(gelid).at(ry).stuk = nullptr;
+        }
     }
 }
 
-void tekenBlokkie(bool isWit, int gelid, int ry, Posisie **posisies)
+void tekenBlokkie(uint_t gelid, uint_t ry, std::array<std::array<Blokkie, g_sylengte>,
+                  g_sylengte> &bord)
 {
-    static int nRy { 1 };
-    static int i { isWit ? (aantalStukke - aantalRye) : aantalRye - 1 };
-    static int teller { 0 };
+    std::cout << ((bord.at(gelid).at(ry).stuk) ?
+                  (bepaalLetter(bord.at(gelid).at(ry).stuk)) :
+                  (bord.at(gelid).at(ry).agtergrond));
+}
 
-    if (nRy == 1)
+void tekenBord(bool isWit, std::array<std::array<Blokkie, g_sylengte>,
+               g_sylengte> &bord)
+{
+    // As dit Wit se beurt is, teken die bord met blokkie a1 links onder.
+    // As dit Swart se beurt is, teken ons blokkie a1 regs bo.
+    for (int gelid { isWit ? static_cast<int>(g_sylengte - 1) : 0 };
+            isWit ? gelid >= 0 : gelid < static_cast<int>(g_sylengte);
+            isWit ? --gelid : ++gelid)
+    {
         std::cout << "\t";
-
-    if ((posisies[i]->koordinaat.gelid == gelid) && (posisies[i]->koordinaat.ry == ry))
-    {
-        std::cout << bepaalLetter(posisies[i]->stuk);
-        if (isWit)
+        for (int ry { isWit ? 0 : static_cast<int>(g_sylengte - 1) };
+                isWit ? ry < static_cast<int>(g_sylengte) : ry >= 0;
+                isWit? ++ry : --ry)
         {
-            ++i;
-            if (i % aantalRye == 0 && teller < sylengte * 8)
-                i -= aantalRye * 2;
+            tekenBlokkie(static_cast<uint_t>(gelid), static_cast<uint_t>(ry), bord);
+            if (isWit ? ry < (static_cast<int>(g_sylengte - 1)) : ry > 0)
+                std::cout << " |";
+            else
+                std::cout << "\n";
         }
-        else
-        {
-            if (i % aantalRye == 0 && teller < sylengte * 8)
-                i += aantalRye * 2;
-            --i;
-        }
-    }
-    else
-    {
-        std::cout << bord[gelid][ry];
+        if (isWit ? gelid > 0 : gelid < static_cast<int>(g_sylengte - 1))
+            std::cout << "\t--|--|--|--|--|--|--|--|--|--\n";
     }
 
-    std::cout << (nRy == sylengte ? "\n\n" : "  ");
-    nRy == sylengte ? nRy = 1 : ++nRy;
-    ++teller;
-    if (teller == sylengte * sylengte)
-    {
-        i = isWit ? (aantalRye - 1) : (aantalStukke - aantalRye);
-        teller = 0;
-    }
-}
-
-void tekenGebuiteStukke(bool isWit, Posisie **posisies)
-{
-    int i { isWit ? 0 : aantalStukke - 1 };
-    while (isWit ? posisies[i]->koordinaat.gelid == 0 : posisies[i]->koordinaat.gelid == 9)
-    {
-        std::cout << bepaalLetter(posisies[i]->stuk) << " ";
-        isWit ? ++i : --i;
-    }
-}
-
-void tekenBord(bool isWit, Posisie **posisies)
-{
-    tekenGebuiteStukke(isWit, posisies);
-
-    if (isWit)  // As dit Wit se beurt is om te speel, teken ons die bord met blokkie a1 links onder
-                // sodat die aansig ooreenstem met wat 'n mens gewoonlik van Wit se kant af sien.
-    {
-        for (int gelid { sylengte - 1 }; gelid >= 0; --gelid)
-        {
-            for (int ry { 0 }; ry < sylengte; ++ry)
-                tekenBlokkie(isWit, gelid, ry, posisies);
-        }
-    }
-    else        //Anders (as dit Swart se beurt is) teken ons die bord andersom ;)
-    {
-        for (int gelid { 0 }; gelid < sylengte; ++gelid)
-        {
-            for (int ry { sylengte - 1 }; ry >= 0; --ry)
-                tekenBlokkie(isWit, gelid, ry, posisies);
-        }
-    }
-    tekenGebuiteStukke(!isWit, posisies);
+    std::cout << "\n";
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
-
+#include <array>
+#include <vector>
 #include "bord.h"
 #include "skuif.h"
 #include "stukke.h"
@@ -14,29 +15,49 @@ enum class Wenner
     SWART
 };
 
-Wenner bepaalWenner(bool isWit, const std::string &skuif, const std::string &stert)
+Wenner bepaalWenner(bool isWit, const std::string &skuif,
+                    const std::string &stert)
 {
     if (isPat(stert))
         return Wenner::GELYKOP;
-    return isWit ? Wenner::SWART : Wenner::WIT; // As dit volgende Wit se beurt sou wees, het Swart gewen, en andersom.
+    else if (isOorgee(skuif))
+        // As die vorige skuif 'n oorgee was, wen die speler wat volgende skuif.
+        return isWit ? Wenner::WIT : Wenner::SWART;
+    else
+        // As dit volgende Wit se beurt sou wees, het Swart gewen, en andersom.
+        return isWit ? Wenner::SWART : Wenner::WIT;
 }
 
-bool isSpelVerby(bool isWit, const std::string &skuif, const std::string &stert)
+bool isSpelVerby(/*bool isWit, vir herhaling v. skuiwe, 50 skuiwe, ens*/
+                 const std::string &skuif, const std::string &stert)
 {
-    return isPat(stert) || isMat(stert) || isOorgee(skuif) || isSkaak(stert[1]);
+    return isPat(stert) || isMat(stert) || isOorgee(skuif) ||
+        isSkaak(stert.at(1u));
 }
 
 bool speelWeer()
 {
-    char antwoord;
+    char antwoord {};
     do
     {
         std::cout << "Wil jy weer speel? <j>a of <n>ee:\n";
         antwoord = getValidChar();
     } while (!(antwoord == 'j' || antwoord == 'n'));
 
-    return antwoord == 'j' ? true : false;
+    return antwoord == 'j';
 }
+
+#if 0
+void tekenGebuiteStukke(bool isWit, std::array<Posisie*, aantalStukke> &posisies)
+{
+    int i { isWit ? 0 : aantalStukke - 1 };
+    while (isWit ? posisies[i]->koordinaat.gelid == 0 : posisies[i]->koordinaat.gelid == 9)
+    {
+        std::cout << bepaalLetter(posisies[i]->stuk) << " ";
+        isWit ? ++i : --i;
+    }
+}
+#endif // 0
 
 int main()
 {
@@ -48,30 +69,35 @@ int main()
 
         bool isWit { true };
 
-        Stuk stukke[aantalStukke];
-        Posisie *posisies[aantalStukke];
-        inisialiseerStukke(stukke, posisies);
+        std::array<Stuk, g_aantalStukke> stukke;
+        std::array<std::array<Blokkie, g_sylengte>, g_sylengte> bord;
+        inisialiseerStukke(stukke);
+        inisialiseerBord(bord, stukke);
 
-        tekenBord(isWit, posisies);
+        tekenBord(isWit, bord);
 
-        std::string skuif { "" };
-        std::string stert { "" };
+        std::string skuif {};
+        std::string stert {};
 
         do
         {
-            skuif = valideerEnDoenSkuif(isWit, stukke, posisies);
+            skuif = krySkuif(isWit, bord);
 
-            //Draai die bord om sodat die opponent nou die skuif kan sien en daaroor dink.
+            std::vector<const Stuk*> witGebuiteStukke;
+            std::vector<const Stuk*> swartGebuiteStukke;
+            doenSkuif(isWit, skuif, bord, isWit ? swartGebuiteStukke : witGebuiteStukke);
+
+            //Draai die bord sodat die opponent die skuif sien en daaroor dink.
             isWit = !isWit;
 
-            tekenBord(isWit, posisies);
+
+            tekenBord(isWit,bord);
             skryfSkuif(isWit, skuif);
 
-            stert = skuif.length() > 3 ? skuif.substr(skuif.length() - 3, 3) : skuif;
+            stert = skuif.length() > 3 ? skuif.substr(skuif.length() - 3, 3) :
+                skuif;
         }
-        while (!isSpelVerby(isWit, skuif, stert));
-
-        ruimStukkeOp(posisies);
+        while (!isSpelVerby(/*isWit, */skuif, stert));
 
         switch (bepaalWenner(isWit, skuif, stert))
         {
@@ -84,6 +110,8 @@ int main()
         case Wenner::SWART:
             std::cout << "Swart wen!\n\n";
             break;
+        default:
+            std::cout << "Fout! Kan nie die wenner bepaal nie.\n\n";
         }
 
     } while (speelWeer());

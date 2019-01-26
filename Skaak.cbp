@@ -31,7 +31,14 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add directory="C:/Users/User/Documents/C++" />
 		</Compiler>
+		<ResourceCompiler>
+			<Add directory="C:/Users/User/Documents/C++" />
+		</ResourceCompiler>
+		<Linker>
+			<Add directory="C:/Users/User/Documents/C++" />
+		</Linker>
 		<Unit filename="../InputValidationRoutines.cpp" />
 		<Unit filename="../InputValidationRoutines.h" />
 		<Unit filename="bord.cpp" />
