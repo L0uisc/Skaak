@@ -7,14 +7,12 @@
 
 struct Blokkie
 {
-    char agtergrond;
     Stuk *stuk;
+    char agtergrond;
 };
 
-void inisialiseerBord(std::array<std::array<Blokkie, g_sylengte>,g_sylengte> &bord,
-                      std::array<Stuk, g_aantalStukke> &stukke);
+void inisialiseerBord(bordArray_t &bord, stukArray_t &stukke);
 
-void tekenBord(bool isWit, std::array<std::array<Blokkie, g_sylengte>,
-               g_sylengte> &bord);
+void tekenBord(bool isWit, bordArray_t &bord);
 
 #endif // BORD_H

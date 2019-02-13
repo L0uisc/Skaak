@@ -47,17 +47,20 @@ bool speelWeer()
     return antwoord == 'j';
 }
 
-#if 0
-void tekenGebuiteStukke(bool isWit, std::array<Posisie*, aantalStukke> &posisies)
+
+void tekenGebuiteStukke(buitVector_t &gebuiteStukke)
 {
-    int i { isWit ? 0 : aantalStukke - 1 };
-    while (isWit ? posisies[i]->koordinaat.gelid == 0 : posisies[i]->koordinaat.gelid == 9)
+    std::cout << "\t";
+    uint_t i { 1u };
+    for (auto stuk : gebuiteStukke)
     {
-        std::cout << bepaalLetter(posisies[i]->stuk) << " ";
-        isWit ? ++i : --i;
+        std::cout << stuk;
+        if (i >= gebuiteStukke.size())
+            break;
+        ++i;
+        std::cout << " ";
     }
 }
-#endif // 0
 
 int main()
 {
@@ -69,8 +72,8 @@ int main()
 
         bool isWit { true };
 
-        std::array<Stuk, g_aantalStukke> stukke;
-        std::array<std::array<Blokkie, g_sylengte>, g_sylengte> bord;
+        stukArray_t stukke;
+        bordArray_t bord;
         inisialiseerStukke(stukke);
         inisialiseerBord(bord, stukke);
 
@@ -79,13 +82,16 @@ int main()
         std::string skuif {};
         std::string stert {};
 
+        buitVector_t witGebuiteStukke;
+        buitVector_t swartGebuiteStukke;
+
         do
         {
-            skuif = krySkuif(isWit, bord);
+            skuif = krySkuif(isWit, bord/*, stukke*/);
 
-            std::vector<const Stuk*> witGebuiteStukke;
-            std::vector<const Stuk*> swartGebuiteStukke;
-            doenSkuif(isWit, skuif, bord, isWit ? swartGebuiteStukke : witGebuiteStukke);
+            if (!isOorgee(skuif))
+                doenSkuif(isWit, skuif, bord, (isWit ? swartGebuiteStukke :
+                          witGebuiteStukke));
 
             //Draai die bord sodat die opponent die skuif sien en daaroor dink.
             isWit = !isWit;
@@ -94,7 +100,7 @@ int main()
             tekenBord(isWit,bord);
             skryfSkuif(isWit, skuif);
 
-            stert = skuif.length() > 3 ? skuif.substr(skuif.length() - 3, 3) :
+            stert = skuif.length() > 3u ? skuif.substr(skuif.length() - 3u, 3u) :
                 skuif;
         }
         while (!isSpelVerby(/*isWit, */skuif, stert));

@@ -21,8 +21,13 @@ struct Stuk
     bool isWit;
 };
 
-void inisialiseerStukke(std::array<Stuk, g_aantalStukke> &stukke);
-char bepaalLetter(const Stuk *stuk);
+struct Blokkie;
+
+using stukArray_t = std::array<Stuk, g_aantalStukke>;
+using bordArray_t = std::array<std::array<Blokkie, g_sylengte>, g_sylengte>;
+
+void inisialiseerStukke(stukArray_t &stukke);
+char bepaalLetter(const Stuk* const stuk);
 Soort bepaalSoort(char letter);
 
 #endif // STUKKE_H

@@ -1,12 +1,13 @@
+#include "konstantes.h"
 #include "stukke.h"
+#include "bord.h"
 
-Soort bepaalSoort(uint_t i, uint_t gelid)
+Soort bepaalSoort(uint_t gelid, uint_t ry)
 {
-    uint_t ry = i % g_aantalRye;
     switch (gelid < 2u ? gelid : 3u - gelid)
     {
     case 0u:
-        switch (ry < 5u ? ry : (g_aantalRye - ry) - 1u)
+        switch (ry < 5u ? ry : (g_sylengte - ry) - 1u)
         {
         case 0u:    return Soort::TORING;
         case 1u:    return Soort::RUITER;
@@ -32,7 +33,7 @@ Soort bepaalSoort(char letter)
     }
 }
 
-char bepaalLetter (const Stuk *stuk)
+char bepaalLetter (const Stuk* const stuk)
 {
     switch (stuk->soort)
     {
@@ -46,13 +47,14 @@ char bepaalLetter (const Stuk *stuk)
     }
 }
 
-void inisialiseerStukke(std::array<Stuk, g_aantalStukke> &stukke)
+void inisialiseerStukke(stukArray_t &stukke)
 {
     for (uint_t i { 0u }; i < g_aantalStukke; ++i)
     {
-        uint_t gelid { i / g_aantalRye };
+        uint_t gelid { i / g_sylengte };
+        uint_t ry { i % g_sylengte };
 
-        stukke.at(i).soort = bepaalSoort(i, gelid);
-        stukke.at(i).isWit = (gelid < 2u);
+        stukke.at(i).soort = bepaalSoort(gelid, ry);
+        stukke.at(i).isWit = gelid < 2u;
     }
 }

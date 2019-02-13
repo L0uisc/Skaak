@@ -1,5 +1,8 @@
 #include <iostream>
 #include <limits>
+#include "InputValidationRoutines.h"
+
+constexpr std::streamsize g_maxStreamSize { std::numeric_limits<std::streamsize>::max() };
 
 int getValidInt()
 {
@@ -12,14 +15,14 @@ int getValidInt()
         std::cout << "Enter a valid integer: ";
         std::cin >> i;
 
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore(g_maxStreamSize, '\n');
 
         if (std::cin.fail())
         {
             invalid = true;
             std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Oops! You did not enter a valid integer.\n";
+            std::cin.ignore(g_maxStreamSize, '\n');
+            std::cerr << "Oops! You did not enter a valid integer.\n";
         }
 
         std::cout << "\n";
@@ -27,7 +30,6 @@ int getValidInt()
     } while (invalid);
 
     return i;
-
 }
 
 double getValidDouble()
@@ -41,14 +43,14 @@ double getValidDouble()
         std::cout << "Enter a valid double: ";
         std::cin >> d;
 
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.ignore(g_maxStreamSize, '\n');
 
         if (std::cin.fail())
         {
             invalid = true;
             std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Oops! You did not enter a valid double.\n";
+            std::cin.ignore(g_maxStreamSize, '\n');
+            std::cerr << "Oops! You did not enter a valid double.\n";
         }
 
         std::cout << "\n";
@@ -56,7 +58,6 @@ double getValidDouble()
     } while (invalid);
 
     return d;
-
 }
 
 char getValidChar()
@@ -65,10 +66,8 @@ char getValidChar()
 
     std::cout << "Enter a valid character: ";
     std::cin >> c;
+    std::cin.ignore(g_maxStreamSize, '\n');
     std::cout << "\n";
 
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
     return c;
-
 }

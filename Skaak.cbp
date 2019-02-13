@@ -21,9 +21,11 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-flto" />
 					<Add option="-O2" />
 				</Compiler>
 				<Linker>
+					<Add option="-flto" />
 					<Add option="-s" />
 				</Linker>
 			</Target>

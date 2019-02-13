@@ -6,17 +6,12 @@
 #include "stukke.h"
 #include "bord.h"
 
-struct Koordinaat
-{
-    uint_t ry;
-    uint_t gelid;
-};
+using buitVector_t = std::vector<const Stuk*>;
 
-const std::string krySkuif(bool isWit, std::array<std::array<Blokkie, g_sylengte>,
-                           g_sylengte> &blokkies);
-void doenSkuif(bool isWit, const std::string &skuif,
-               std::array<std::array<Blokkie, g_sylengte>, g_sylengte> &bord,
-               std::vector<const Stuk*> &gebuiteStukke);
+const std::string& krySkuif(bool isWit, bordArray_t &bord/*,
+                            const stukArray_t &stukke*/);
+void doenSkuif(bool isWit, const std::string &skuif, bordArray_t &bord,
+               buitVector_t &gebuiteStukke);
 void skryfSkuif(bool isSwart, const std::string &skuif);
 bool isOorgee(const std::string &skuif);
 bool isSkaak(char skaak);
