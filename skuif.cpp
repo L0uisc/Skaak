@@ -1,11 +1,11 @@
-#include <iostream>
-#include <string>
-#include <cmath>
-#include <vector>
 #include "skuif.h"
 #include "konstantes.h"
 #include "stukke.h"
 #include "bord.h"
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <vector>
 
 struct Koordinaat
 {
@@ -19,10 +19,8 @@ namespace Skuif
     static Koordinaat g_eindPos;
     static Blokkie *g_beginBlokkie      { nullptr };
     static Koordinaat g_beginPos;
-#if 0
     static Koordinaat g_witKoningPos    { 0u, 4u };
     static Koordinaat g_swartKoningPos  { 7u, 4u };
-#endif // 0
 }
 
 enum class Karakter
@@ -65,6 +63,8 @@ enum class Fout
     ROKEER_SKUIF_UIT_SKAAK,
     ROKEER_SKUIF_OOR_BEDREIGDE_BLOKKIE,
     ROKEER_KONING_IN_SKAAK,
+    VERKEERDE_STUK_BY_BESTEMMING,
+    PAD_GEBLOKKEER,
     DUBBELSINNIG,
     GEEN_MOONTLIKE_SKUIF,
     SKUIF_IN_SKAAK,
@@ -74,7 +74,9 @@ enum class Fout
     ONWETTIGE_LOPERBEWEGING,
     ONWETTIGE_DAMEBEWEGING,
     ONWETTIGE_KONINGBEWEGING,
-    ONWETTIGE_PIONBEWEGING
+    ONWETTIGE_PIONBEWEGING,
+    KONING_SKUIF_IN_SKAAK,
+    KONING_STEEDS_IN_SKAAK
 };
 
 bool isOorgee(const std::string &skuif)
@@ -142,12 +144,14 @@ bool isPat(const std::string &pat)
     return (pat == "pat");
 }
 
-bool isKorrekteGelid(bool isWit, bool isEnPassant, char gelid)
+bool isLaasteGelid(bool isWit, char gelid)
 {
-    if (isEnPassant)
-        return gelid == isWit ? '6' : '3';
-    else
-        return gelid == isWit ? '8' : '1';
+    return gelid == isWit ? '8' : '1';
+}
+
+bool isSesdeGelid(bool isWit, char gelid)
+{
+    return gelid == isWit ? '6' : '3';
 }
 
 bool isWettigeToringBeweging(Koordinaat beginpos, Koordinaat eindpos)
@@ -158,10 +162,10 @@ bool isWettigeToringBeweging(Koordinaat beginpos, Koordinaat eindpos)
 
 bool isWettigeRuiterBeweging(Koordinaat beginpos, Koordinaat eindpos)
 {
-    return ((std::abs(eindpos.ry - beginpos.ry == 1) &&
-             std::abs(eindpos.gelid - beginpos.gelid == 2)) ||
-            (std::abs(eindpos.ry - beginpos.ry == 2) &&
-             std::abs(eindpos.gelid - beginpos.gelid == 1)));
+    return (std::abs(eindpos.ry - beginpos.ry == 1)
+            && std::abs(eindpos.gelid - beginpos.gelid == 2))
+            || (std::abs(eindpos.ry - beginpos.ry == 2)
+                && std::abs(eindpos.gelid - beginpos.gelid == 1));
 }
 
 bool isWettigeLoperBeweging(Koordinaat beginpos, Koordinaat eindpos)
@@ -171,13 +175,15 @@ bool isWettigeLoperBeweging(Koordinaat beginpos, Koordinaat eindpos)
 
 bool isWettigeDameBeweging(Koordinaat beginpos, Koordinaat eindpos)
 {
-    return isWettigeToringBeweging(beginpos, eindpos) && isWettigeLoperBeweging(beginpos, eindpos);
+    return isWettigeToringBeweging(beginpos, eindpos)
+        && isWettigeLoperBeweging(beginpos, eindpos);
 }
 
 bool isWettigeKoningBeweging(Koordinaat beginpos, Koordinaat eindpos)
 {
-    return (isWettigeDameBeweging(beginpos, eindpos) && std::abs(eindpos.ry - beginpos.ry) <= 1 &&
-            std::abs(eindpos.gelid - beginpos.gelid) <= 1);
+    return isWettigeDameBeweging(beginpos, eindpos)
+        && std::abs(eindpos.ry - beginpos.ry) <= 1
+        && std::abs(eindpos.gelid - beginpos.gelid) <= 1;
 }
 
 bool isWettigePionBeweging(bool isWit, bool isBuitskuif,
@@ -230,15 +236,6 @@ Koordinaat mapStringNaKoordinaat(const std::string &koordinaat)
     return resultaat;
 }
 
-Blokkie* mapStringNaBlokkie(const std::string &koordinaat, bordArray_t &bord)
-{
-    // Map 'a' na 0, 'b' na 1, ens.
-    uint_t ry = static_cast<uint_t>(koordinaat.at(0u) - ('a'));
-    // Map '1' na 0, '2' na 1, ens.
-    uint_t gelid = static_cast<uint_t>(koordinaat.at(1u) - ('1'));
-    return &bord.at(gelid).at(ry);
-}
-
 void geeFoutboodskap(Fout fout, bool geldigRoep=false, int pos=0)
 {
     std::string foutboodskap;
@@ -287,7 +284,7 @@ void geeFoutboodskap(Fout fout, bool geldigRoep=false, int pos=0)
             break;
         case Fout::SPASIE:
             foutboodskap = "ongeldige string na spasie.\n"
-                "'n Spasie kan slegs deur \"mat\", \"pat\"\n of \"e.p.\" gevolg word.";
+                "'n Spasie kan slegs deur \"mat\", \"pat\" of \"e.p.\" gevolg word.";
             break;
         case Fout::EN_PASSANT_NIE_NA_6DE_GELID:
             foutboodskap = "ongeldige en passant-buit.\n"
@@ -311,7 +308,7 @@ void geeFoutboodskap(Fout fout, bool geldigRoep=false, int pos=0)
             foutboodskap = "Onbekende fout.";
     }
 
-    foutboodskap = " " + std::string { geldigRoep ? "Ongeldige" : "Onwettige" } +
+    foutboodskap = std::string { geldigRoep ? "Ongeldige" : "Onwettige" } +
         " skuif: " + foutboodskap;
 
     if (pos != 0)
@@ -395,7 +392,7 @@ bool isGeldig(bool isWit, const std::string &skuif)
             case Karakter::PROMOVEER:  // Voer uit as huidige karakter (skuif.at(k) op 'n '=' volg.
                 // 'n Pion kan net promoveer op die laaste gelid. As die koördinaat 'n ander gelid gee,
                 // lê die fout reeds by daardie karakter in die skuifstring.
-                promoveerOpLaasteGelid = isKorrekteGelid(isWit, false, skuif.at(k - 2u));
+                promoveerOpLaasteGelid = isLaasteGelid(isWit, skuif.at(k - 2u));
                 if (!promoveerOpLaasteGelid)
                     k -= 2u;
                 geldig = promoveerOpLaasteGelid && isStuk(skuif.at(k)) &&
@@ -408,7 +405,7 @@ bool isGeldig(bool isWit, const std::string &skuif)
 
             case Karakter::SPASIE:  // Voer uit as huidige karakter (skuif.at(k) op 'n spasie volg.
                 stert = skuif.substr(k, skuifLengte - k);
-                geldig =  (isEnPassant(stert) && isKorrekteGelid(isWit, true, skuif.at(k - 2u)) &&
+                geldig =  (isEnPassant(stert) && isSesdeGelid(isWit, skuif.at(k - 2u)) &&
                            buitTal == 1) || isMat(stert) || isPat(stert);
                 break;
 
@@ -420,8 +417,8 @@ bool isGeldig(bool isWit, const std::string &skuif)
                 // As enige van die volgende waar is, het ek reeds alles tot by die einde
                 // van die string getoets, al is die lusteller (k) nog nie gelyk aan
                 // skuifLengte nie, so ek moet dus eksplisiet uit die lus uitbreek.
-                if (isRokeer(skuif) || isOorgee(skuif) || isEnPassant(stert) ||
-                    isMat(stert) || isPat(stert))
+                if (isRokeer(skuif) || isOorgee(skuif) || isEnPassant(stert)
+                    || isMat(stert) || isPat(stert))
                     break;
 
                 //  Wat die huidige karakter is, bepaal wat die volgende karakter mag wees.
@@ -439,8 +436,8 @@ bool isGeldig(bool isWit, const std::string &skuif)
                             { mapStringNaKoordinaat(skuif.substr(k - 4u, 2)) };
                         Koordinaat eindpos
                             { mapStringNaKoordinaat(skuif.substr(k - 1u, 2)) };
-                        geldig = isWettigeBeweging(isWit, bepaalSoort(skuif.at(0u)),
-                                                   buitTal > 0, beginpos, eindpos);
+                        geldig = isWettigeBeweging(isWit, bepaalSoort(skuif.at(0u))
+                                                   , buitTal > 0, beginpos, eindpos);
                         if (geldig)
                         {
                             using namespace Skuif;
@@ -449,8 +446,8 @@ bool isGeldig(bool isWit, const std::string &skuif)
                         }
                     }
                     vorige = Karakter::GELID;
-                    fout = geldig ? Fout::GELID :
-                        bepaalOnwettigeBeweging(bepaalSoort(skuif.at(0u)));
+                    fout = geldig ? Fout::GELID
+                        : bepaalOnwettigeBeweging(bepaalSoort(skuif.at(0u)));
                 }
                 else if (isStuk(skuif.at(k)))
                 {
@@ -477,8 +474,8 @@ bool isGeldig(bool isWit, const std::string &skuif)
                 else if (isPromoveer(skuif.at(k)))
                 {
                     vorige = Karakter::PROMOVEER;
-                    fout = promoveerOpLaasteGelid ? Fout::PROMOVEER_NIE_NA_STUK :
-                        Fout::PROMOVEER_NIE_OP_LAASTE_GELID;
+                    fout = promoveerOpLaasteGelid ? Fout::PROMOVEER_NIE_NA_STUK
+                        : Fout::PROMOVEER_NIE_OP_LAASTE_GELID;
                 }
                 else if (isSkaak(skuif.at(k)))
                 {
@@ -486,19 +483,19 @@ bool isGeldig(bool isWit, const std::string &skuif)
                     fout = Fout::SKAAK;
                 }
             }
-            else
+            else    // Daar is 'n fout!
             {
                 if (k == 0u)
                     fout = Fout::BEGIN;
                 if (koordinaatTal == 2 && isRy(skuif.at(k)))
                     fout = Fout::TE_VEEL_KOORDINATE;
-                else if ((buitTal + koppeltekenTal) == 1 &&
-                         (isBuit(skuif.at(k) || isKoppelteken(skuif.at(k)))))
-                    fout = isBuit(skuif.at(k)) ? Fout::TE_VEEL_BUIT :
-                        Fout::TE_VEEL_KOPPELTEKEN;
+                else if ((buitTal + koppeltekenTal) == 1
+                         && (isBuit(skuif.at(k) || isKoppelteken(skuif.at(k)))))
+                    fout = isBuit(skuif.at(k)) ? Fout::TE_VEEL_BUIT
+                        : Fout::TE_VEEL_KOPPELTEKEN;
                 else if (isEnPassant(stert))
-                    fout = buitTal != 1 ? Fout::EN_PASSANT_NIE_BUITSKUIF :
-                        Fout::EN_PASSANT_NIE_NA_6DE_GELID;
+                    fout = buitTal != 1 ? Fout::EN_PASSANT_NIE_BUITSKUIF
+                        : Fout::EN_PASSANT_NIE_NA_6DE_GELID;
                 break;
             }
 
@@ -531,7 +528,7 @@ Koordinaat soekStuk(Koordinaat rigting, Koordinaat beginpos, bordArray_t &bord,
     int teller { 1 };
     Koordinaat soekPos { beginpos.gelid + rigting.gelid, beginpos.ry + rigting.ry };
 
-    // Sorg dat die indekse nie buite die omvang van die array gaan nie.
+    // Sorg dat die koördinate nie af van die bord af gaan nie.
     while (soekPos.gelid < g_sylengte && soekPos.ry < g_sylengte)
     {
         // As daar 'n stuk is op die posisie, return die koördinaat.
@@ -550,7 +547,7 @@ Koordinaat soekStuk(Koordinaat rigting, Koordinaat beginpos, bordArray_t &bord,
 
         ++teller;
     }
-    return { 8u };
+    return { g_sylengte, 0u };
 }
 
 bool soekBeginPos(bool isWit, bool resultaat, Soort soort, Koordinaat rigting
@@ -573,7 +570,7 @@ bool soekBeginPos(bool isWit, bool resultaat, Soort soort, Koordinaat rigting
         // As die skuif nie van ry verander nie, is dit nie 'n buitskuif nie.
         // As dit na die 4e gelid vir Wit en 5e gelid vir Swart skuif, slegs dan,
         // kan dit wettig 2 blokkies ver skuif.
-        if (rigting.ry == 0u && skuif.at(1u) == isWit ? '3' : '4')
+        if (skuif.at(1u) == isWit ? '3' : '4')
             afstand = 2;
         else
             // Anders mag net 1 blokkie ver skuif.
@@ -583,13 +580,13 @@ bool soekBeginPos(bool isWit, bool resultaat, Soort soort, Koordinaat rigting
     // Tydelike veranderlike.
     Koordinaat tydl { soekStuk(rigting, g_eindPos, bord, afstand) };
 
-    if (tydl.gelid != 8u)
+    if (tydl.gelid != g_sylengte)
     {
         Stuk *stuk { bord.at(tydl.gelid).at(tydl.ry).stuk };
 
         if (stuk->isWit == isWit && stuk->soort == soort)
         {
-            if (g_beginPos.gelid != 8u)
+            if (g_beginPos.gelid == g_sylengte)
             {
                 g_beginPos = tydl;
                 resultaat = true;
@@ -602,9 +599,6 @@ bool soekBeginPos(bool isWit, bool resultaat, Soort soort, Koordinaat rigting
         }
     }
 
-    if (!resultaat)
-        geeFoutboodskap(Fout::GEEN_MOONTLIKE_SKUIF);
-
     return resultaat;
 }
 
@@ -615,27 +609,32 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
     using namespace Skuif;
 
     // Daar is reeds 'n tentatiewe beginpos gevind deur isGeldig()
-    if (g_beginPos.gelid != 8u)
+    if (g_beginPos.gelid != g_sylengte)
     {
         Stuk *stuk  { bord.at(g_beginPos.gelid).at(g_beginPos.ry).stuk };
         resultaat = stuk->soort == soort && stuk->isWit == isWit;
+
+        if (!resultaat)
+            geeFoutboodskap(Fout::VERKEERDE_STUK_BY_BESTEMMING);
 
         // Kyk of die pad oop is tussen die voorgenome begin- en eindpos.
         // 'n Ruiter kan spring, so nie nodig om vir ruiters the toets nie.
         if (soort != Soort::RUITER)
         {
-            int gelid   { static_cast<int>(g_beginPos.gelid - g_eindPos.gelid) };
-            int ry      { static_cast<int>(g_beginPos.ry - g_eindPos.ry) };
-            Koordinaat rigting { static_cast<uint_t>(gelid / abs(gelid))
-                                ,static_cast<uint_t>(ry / abs(ry)) };
+            uint_t gelid   { g_eindPos.gelid - g_beginPos.gelid };
+            uint_t ry      { g_eindPos.ry - g_beginPos.ry };
 
-            Koordinaat res { soekStuk(rigting, g_beginPos, bord) };
+            Koordinaat res { soekStuk({ gelid, ry }, g_beginPos, bord) };
             resultaat = resultaat && res.gelid == g_eindPos.gelid
                 && res.ry == g_eindPos.ry;
+
+            if (!resultaat)
+                geeFoutboodskap(Fout::PAD_GEBLOKKEER);
         }
     }
     else
     {
+        // Lees kommentaar in isParallelleBedreiging() vir verduideliking van lusse.
         if (soort == Soort::TORING || soort == Soort::DAME || soort == Soort::KONING)
         {
             for (int gelid { -1 }; gelid <= 1; ++gelid)
@@ -650,6 +649,7 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
             }
         }
 
+        // Lees kommentaar in isDiagonaleBedreiging() vir verduideliking van lusse.
         if (soort == Soort::LOPER || soort == Soort::DAME || soort == Soort::KONING)
         {
             for (int gelid { -1 }; gelid <= 1; gelid += 2)
@@ -663,6 +663,8 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
                 }
             }
         }
+
+        // Lees kommentaar in isRuitersBedreiging() vir verduideliking van lusse.
         else if (soort == Soort::RUITER)
         {
             for (int gelid { -2 }; gelid <= 2; ++ gelid)
@@ -670,7 +672,7 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
                 if (gelid == 0)
                     continue;
 
-                int vermenigvuldiger { gelid % 2 ? 1 : 2 };
+                int vermenigvuldiger { gelid % 2 == 0 ? 1 : 2 };
 
                 for (int ry { -1 }; ry <= 1; ry += 2)
                 {
@@ -682,20 +684,19 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
                 }
             }
         }
-        else
+        else    // soort == Soort::PION
         {
+            // Pionne kan net vorentoe skuif, so die beginpos se gelid moet
+            // kleiner as die eindpos s'n wees vir Wit en groter vir Swart.
             int gelid { isWit ? -1 : 1 };
-            uint_t skuifLengte { skuif.length() };
 
-            for (int ry { skuifLengte > 2u && isBuit(skuif.at(2u)) ? -1 : 0 }
-                 ; ry <= 1; ry += 2)
-            {
-                resultaat = soekBeginPos(isWit, resultaat, soort
-                                         , { static_cast<uint_t>(gelid)
-                                         , static_cast<uint_t>(ry) }
-                                         , bord, skuif);
-            }
+            resultaat = soekBeginPos(isWit, resultaat, soort
+                                     , { static_cast<uint_t>(gelid), 0u }
+                                     , bord, skuif);
         }
+
+        if (!resultaat)
+            geeFoutboodskap(Fout::GEEN_MOONTLIKE_SKUIF);
     }
     return resultaat;
 }
@@ -704,10 +705,15 @@ bool isRuitersBedreiging(bool isWit, Koordinaat koord, bordArray_t &bord)
 {
     for (int ryVerpl { -2 }; ryVerpl <= 2; ++ryVerpl)
     {
+        // 'n Ruiter kan nie op dieselfde ry eindig as waarop dit begin het nie.
         if (ryVerpl == 0)
             continue;
 
-        int vermenigvuldiger { ryVerpl % 2 ? 1 : 2 };
+        // gelidVerpl moet +/-1 wees as ryVerpl +/-2 is en andersom.
+        // Die lus inisialiseer gelidVerpl egter altyd met -1, sodat dit altyd
+        // +/-1 is. Vermenigvuldiger word met gelidVerpl gemaal om die regte
+        // waarde te kry.
+        int vermenigvuldiger { ryVerpl % 2 == 0 ? 1 : 2 };
 
         for (int gelidVerpl { -1 }; gelidVerpl <= 1; gelidVerpl += 2)
         {
@@ -715,11 +721,14 @@ bool isRuitersBedreiging(bool isWit, Koordinaat koord, bordArray_t &bord)
                 * vermenigvuldiger), static_cast<uint_t>(ryVerpl) }
                 ,koord, bord, 1) };
 
-            Stuk *stuk { bord.at(pos.gelid).at(pos.ry).stuk };
-
-            if (stuk->isWit == !isWit && stuk->soort == Soort::RUITER)
+            if (pos.gelid != g_sylengte)
             {
-                return true;
+                Stuk *stuk { bord.at(pos.gelid).at(pos.ry).stuk };
+
+                if (stuk->isWit != isWit && stuk->soort == Soort::RUITER)
+                {
+                    return true;
+                }
             }
         }
     }
@@ -737,21 +746,24 @@ bool isDiagonaleBedreiging(bool isWit, Koordinaat koordinaat, bordArray_t &bord)
                                       ,static_cast<uint_t>(ry)}
                                       ,koordinaat, bord) };
 
-            Stuk *stuk { bord.at(pos.gelid).at(pos.ry).stuk };
-
-            if (stuk->isWit != isWit)
+            if (pos.gelid != g_sylengte)
             {
-                if (stuk->soort == Soort::DAME || stuk->soort == Soort::LOPER)
+                Stuk *stuk { bord.at(pos.gelid).at(pos.ry).stuk };
+
+                if (stuk && stuk->isWit != isWit)
                 {
-                    return true;
-                }
-                else if (stuk->soort == Soort::KONING)
-                {
-                    return isWettigeKoningBeweging(pos, koordinaat);
-                }
-                else if (stuk->soort == Soort::PION)
-                {
-                    return isWettigePionBeweging(isWit, true, pos, koordinaat);
+                    if (stuk->soort == Soort::DAME || stuk->soort == Soort::LOPER)
+                    {
+                        return true;
+                    }
+                    else if (stuk->soort == Soort::KONING)
+                    {
+                        return isWettigeKoningBeweging(pos, koordinaat);
+                    }
+                    else if (stuk->soort == Soort::PION)
+                    {
+                        return isWettigePionBeweging(isWit, true, pos, koordinaat);
+                    }
                 }
             }
         }
@@ -770,17 +782,20 @@ bool isParallelleBedreiging(bool isWit, Koordinaat koordinaat, bordArray_t &bord
                                       ,static_cast<uint_t>(ry)}
                                       ,koordinaat, bord) };
 
-            Stuk *stuk { bord.at(pos.gelid).at(pos.ry).stuk };
-
-            if (stuk->isWit != isWit)
+            if (pos.gelid != g_sylengte)
             {
-                if (stuk->soort == Soort::DAME || stuk->soort == Soort::TORING)
+                Stuk *stuk { bord.at(pos.gelid).at(pos.ry).stuk };
+
+            if (stuk && stuk->isWit != isWit)
                 {
-                    return true;
-                }
-                else if (stuk->soort == Soort::KONING)
-                {
-                    return isWettigeKoningBeweging(pos, koordinaat);
+                    if (stuk->soort == Soort::DAME || stuk->soort == Soort::TORING)
+                    {
+                        return true;
+                    }
+                    else if (stuk->soort == Soort::KONING)
+                    {
+                        return isWettigeKoningBeweging(pos, koordinaat);
+                    }
                 }
             }
         }
@@ -796,6 +811,31 @@ bool isBlokkieBedreig(bool isWit, Koordinaat koordinaat, bordArray_t &bord)
         || isParallelleBedreiging(isWit, koordinaat, bord);
 }
 
+bool skuifUitSkaak(bool isWit, Soort skuifSoort, bordArray_t& bord)
+{
+    bool resultaat {};
+
+    using namespace Skuif;
+    Stuk* beginStuk { g_beginBlokkie->stuk };
+    g_beginBlokkie->stuk = nullptr;
+
+    if (skuifSoort != Soort::KONING)
+    {
+        Stuk spookData;
+        g_eindBlokkie->stuk = &spookData;
+
+        resultaat = isBlokkieBedreig(isWit, isWit ? g_witKoningPos : g_swartKoningPos
+                                     , bord);
+    }
+    else
+    {
+        resultaat = isBlokkieBedreig(isWit, g_eindPos, bord);
+    }
+
+    g_beginBlokkie->stuk = beginStuk;
+    return resultaat;
+}
+
 bool isWettig(bool isWit, const std::string &skuif, bordArray_t &bord)
 {
     // Hierdie static bools dui aan of elk van die 4 torings en 2 konings al geskuif het.
@@ -807,48 +847,50 @@ bool isWettig(bool isWit, const std::string &skuif, bordArray_t &bord)
     static bool swartKortToring { true };
     static bool swartLangToring { true };
 
+    bool wettig { false };
+
     if (isRokeer(skuif))
     {
         bool kortRokade { skuif == "0-0" };
 
         // Inisialiseer met die resultaat of die koning al geskuif het.
-        bool rokadeWettig { isWit ? witKoning : swartKoning };
+        wettig = isWit ? witKoning : swartKoning;
         const uint_t gelid { isWit ? 0u : 7u };
 
-        if (rokadeWettig)   // As die eerste toets slaag...
+        if (wettig)   // As die eerste toets slaag...
         {
             // doen die tweede toets ;-) (of die betrokke toring al geskuif het.)
             if (kortRokade)
-                rokadeWettig = isWit ? witKortToring : swartKortToring;
+                wettig = isWit ? witKortToring : swartKortToring;
             else
-                rokadeWettig = isWit ? witLangToring : swartLangToring;
+                wettig = isWit ? witLangToring : swartLangToring;
 
-            if (rokadeWettig)   // As die tweede toets slaag...
+            if (wettig)   // As die tweede toets slaag...
             {
                 if (kortRokade)     // Toets of die bord oop is tussen Koning en Toring. (Toets 3)
-                    rokadeWettig = !(bord.at(gelid).at(5u).stuk &&
-                                     bord.at(gelid).at(6u).stuk);
+                    wettig = !(bord.at(gelid).at(5u).stuk
+                               && bord.at(gelid).at(6u).stuk);
                 else
-                    rokadeWettig = !(bord.at(gelid).at(3u).stuk &&
-                                     bord.at(gelid).at(2u).stuk &&
-                                     bord.at(gelid).at(1u).stuk);
+                    wettig = !(bord.at(gelid).at(3u).stuk
+                               && bord.at(gelid).at(2u).stuk
+                               && bord.at(gelid).at(1u).stuk);
 
-                if (rokadeWettig)   // Toets of die Koning in skaak is. (Toets 4)
+                if (wettig)   // Toets of die Koning in skaak is. (Toets 4)
                 {
                     Koordinaat blokkie { 4u, gelid };
-                    rokadeWettig = !isBlokkieBedreig(isWit, blokkie, bord);
+                    wettig = !isBlokkieBedreig(isWit, blokkie, bord);
 
-                    if (rokadeWettig)   // Toets of die Koning oor 'n bedreigde blokkie spring. (Toets 5)
+                    if (wettig)   // Toets of die Koning oor 'n bedreigde blokkie spring. (Toets 5)
                     {
                         blokkie.ry = kortRokade ? 5u : 3u;
-                        rokadeWettig = !isBlokkieBedreig(isWit, blokkie, bord);
+                        wettig = !isBlokkieBedreig(isWit, blokkie, bord);
 
-                        if (rokadeWettig)   // Toets of die koning in skaak in skuif. (Toets 6)
+                        if (wettig)   // Toets of die koning in skaak in skuif. (Toets 6)
                         {
                             blokkie.ry = kortRokade ? 6u : 2u;
-                            rokadeWettig = !isBlokkieBedreig(isWit, blokkie, bord);
+                            wettig = !isBlokkieBedreig(isWit, blokkie, bord);
 
-                            if (!rokadeWettig)  // As die sesde toets dop:
+                            if (!wettig)  // As die sesde toets dop:
                                 geeFoutboodskap(Fout::SKUIF_IN_SKAAK);
                         }
                         else    // As die vyfde toets dop:
@@ -875,33 +917,60 @@ bool isWettig(bool isWit, const std::string &skuif, bordArray_t &bord)
         {
             geeFoutboodskap(Fout::ROKEER_KONING_REEDS_GESKUIF);
         }
-
-        return rokadeWettig;
     }
     else
     {
         using namespace Skuif;
 
         // Inisialiseer met of 'n wettige beginpos gevind is.
-        bool skuifWettig { bepaalBeginPos(isWit, skuif, bord) };
+        wettig = bepaalBeginPos(isWit, skuif, bord);
 
-        if (skuifWettig)
+        if (wettig)
         {
             g_beginBlokkie = &bord.at(g_beginPos.gelid).at(g_beginPos.ry);
             g_eindBlokkie  = &bord.at(g_eindPos.gelid).at(g_eindPos.ry);
+
+            Stuk *eindStuk { g_eindBlokkie->stuk };
+
+            if (eindStuk)
+                wettig = eindStuk->isWit != isWit;
+
+            if (wettig)
+            {
+                Soort skuifSoort { bepaalSoort(skuif.at(0u)) };
+                // Toets of Koning in skaak staan
+                if (isBlokkieBedreig(isWit, isWit ? g_witKoningPos
+                                     : g_swartKoningPos, bord))
+                {
+                    // Kyk of Koning in skaak bly na skuif
+                    wettig = skuifUitSkaak(isWit, skuifSoort, bord);
+
+                    if (!wettig)
+                        geeFoutboodskap(Fout::KONING_STEEDS_IN_SKAAK);
+                }
+                else if (skuifSoort == Soort::KONING)
+                {
+                    wettig = skuifUitSkaak(isWit, skuifSoort, bord);
+
+                    if (!wettig)
+                        geeFoutboodskap(Fout::KONING_SKUIF_IN_SKAAK);
+                }
+            }
+            else
+            {
+                geeFoutboodskap(Fout::BUIT_EIE_STUK);
+            }
         }
-
-
-        return skuifWettig;
     }
+
+    return wettig;
 }
 
-const std::string& krySkuif(bool isWit, bordArray_t &bord/*,
-                            const stukArray_t &stukke*/)
+const std::string& krySkuif(bool isWit, bordArray_t &bord)
 {
     // Bepaal watter kleur volgende moet skuif om die spelers te herinner.
     const std::string kleur { (isWit) ? "WIT" : "SWART" };
-    static std::string skuif;
+    static std::string skuif {};
 
     do
     {
@@ -921,6 +990,10 @@ void doenSkuif(bool isWit, const std::string &skuif, bordArray_t &bord,
     if (isRokeer(skuif))
     {
         const uint_t gelid { isWit ? 0u : 7u };
+
+        using namespace Skuif;
+        Koordinaat& koningPos { isWit ? g_witKoningPos : g_swartKoningPos };
+
         if (skuif == "0-0") // Kortrokade
         {
             bord.at(gelid).at(6u).stuk = bord.at(gelid).at(4u).stuk;
@@ -928,6 +1001,8 @@ void doenSkuif(bool isWit, const std::string &skuif, bordArray_t &bord,
 
             bord.at(gelid).at(5u).stuk = bord.at(gelid).at(7u).stuk;
             bord.at(gelid).at(7u).stuk = nullptr;
+
+            koningPos.ry = 6u;
         }
         else                // Langrokade
         {
@@ -936,16 +1011,20 @@ void doenSkuif(bool isWit, const std::string &skuif, bordArray_t &bord,
 
             bord.at(gelid).at(3u).stuk = bord.at(gelid).at(0u).stuk;
             bord.at(gelid).at(0u).stuk = nullptr;
+
+            koningPos.ry = 2u;
         }
 
     }
     else
     {
         using namespace Skuif;
+
+        Stuk *eindStuk { g_eindBlokkie->stuk };
         // Daar is 'n stuk by die bestemming wat gebuit word.
-        if (g_eindBlokkie->stuk)
+        if (eindStuk)
             // Las die stuk wat gebuit word aan die vektor van gebuite stukke.
-            gebuiteStukke.push_back(g_eindBlokkie->stuk);
+            gebuiteStukke.push_back(eindStuk);
 
         g_eindBlokkie->stuk  = g_beginBlokkie->stuk;
         g_beginBlokkie->stuk = nullptr;

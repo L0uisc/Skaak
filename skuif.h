@@ -1,10 +1,10 @@
 #ifndef SKUIF_H
 #define SKUIF_H
 
-#include <vector>
 #include "konstantes.h"
 #include "stukke.h"
 #include "bord.h"
+#include <vector>
 
 using buitVector_t = std::vector<const Stuk*>;
 

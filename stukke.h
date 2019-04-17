@@ -1,8 +1,8 @@
 #ifndef STUKKE_H
 #define STUKKE_H
 
-#include <array>
 #include "konstantes.h"
+#include <array>
 
 enum class Soort
 {

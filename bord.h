@@ -1,9 +1,9 @@
 #ifndef BORD_H
 #define BORD_H
 
-#include <array>
 #include "konstantes.h"
 #include "stukke.h"
+#include <array>
 
 struct Blokkie
 {

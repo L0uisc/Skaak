@@ -1,12 +1,12 @@
-#include <iostream>
-#include <string>
-#include <array>
-#include <vector>
 #include "bord.h"
 #include "skuif.h"
 #include "stukke.h"
 #include "konstantes.h"
 #include "InputValidationRoutines.h"
+#include <iostream>
+#include <string>
+#include <array>
+#include <vector>
 
 enum class Wenner
 {
@@ -48,18 +48,20 @@ bool speelWeer()
 }
 
 
-void tekenGebuiteStukke(buitVector_t &gebuiteStukke)
+void tekenGebuiteStukke(const buitVector_t &gebuiteStukke)
 {
     std::cout << "\t";
     uint_t i { 1u };
     for (auto stuk : gebuiteStukke)
     {
-        std::cout << stuk;
+        std::cout << (i == 1u ? "" : " ");
+        std::cout << bepaalLetter(stuk);
+
         if (i >= gebuiteStukke.size())
             break;
         ++i;
-        std::cout << " ";
     }
+    std::cout << "\n\n";
 }
 
 int main()
@@ -82,8 +84,8 @@ int main()
         std::string skuif {};
         std::string stert {};
 
-        buitVector_t witGebuiteStukke;
-        buitVector_t swartGebuiteStukke;
+        buitVector_t witGebuiteStukke {};
+        buitVector_t swartGebuiteStukke {};
 
         do
         {
@@ -96,8 +98,10 @@ int main()
             //Draai die bord sodat die opponent die skuif sien en daaroor dink.
             isWit = !isWit;
 
-
+            tekenGebuiteStukke(isWit ? witGebuiteStukke : swartGebuiteStukke);
             tekenBord(isWit,bord);
+            tekenGebuiteStukke(isWit ? swartGebuiteStukke : witGebuiteStukke);
+
             skryfSkuif(isWit, skuif);
 
             stert = skuif.length() > 3u ? skuif.substr(skuif.length() - 3u, 3u) :

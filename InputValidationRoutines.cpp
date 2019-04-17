@@ -1,13 +1,13 @@
+#include "InputValidationRoutines.h"
 #include <iostream>
 #include <limits>
-#include "InputValidationRoutines.h"
 
 constexpr std::streamsize g_maxStreamSize { std::numeric_limits<std::streamsize>::max() };
 
 int getValidInt()
 {
     int i;
-    bool invalid { false };
+    bool invalid {};
 
     do
     {
@@ -35,7 +35,7 @@ int getValidInt()
 double getValidDouble()
 {
     double d;
-    bool invalid { false };
+    bool invalid {};
 
     do
     {

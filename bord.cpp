@@ -1,8 +1,8 @@
-#include <iostream>
-#include <array>
 #include "konstantes.h"
 #include "bord.h"
 #include "stukke.h"
+#include <iostream>
+#include <array>
 
 void inisialiseerBord(bordArray_t &bord, stukArray_t &stukke)
 {
@@ -68,6 +68,7 @@ void tekenBord(bool isWit, bordArray_t &bord)
                 isWit ? ry < static_cast<int>(g_sylengte) : ry >= 0;
                 isWit ? ++ry : --ry)
         {
+// TODO (User#1#): Pass Blokkie* i.p.v. ry, gelid en bord.
             tekenBlokkie(static_cast<uint_t>(gelid), static_cast<uint_t>(ry), bord);
             std::cout << " |";
         }
