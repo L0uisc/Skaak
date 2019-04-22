@@ -6,7 +6,7 @@ constexpr std::streamsize g_maxStreamSize { std::numeric_limits<std::streamsize>
 
 int getValidInt()
 {
-    int i;
+    int i {};
     bool invalid {};
 
     do
@@ -34,7 +34,7 @@ int getValidInt()
 
 double getValidDouble()
 {
-    double d;
+    double d {};
     bool invalid {};
 
     do
@@ -62,7 +62,7 @@ double getValidDouble()
 
 char getValidChar()
 {
-    char c;
+    char c {};
 
     std::cout << "Enter a valid character: ";
     std::cin >> c;

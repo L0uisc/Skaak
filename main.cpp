@@ -54,14 +54,14 @@ void tekenGebuiteStukke(const buitVector_t &gebuiteStukke)
     uint_t i { 1u };
     for (auto stuk : gebuiteStukke)
     {
-        std::cout << (i == 1u ? "" : " ");
         std::cout << bepaalLetter(stuk);
+        std::cout << (i == gebuiteStukke.size() ? "\n" : " ");
 
         if (i >= gebuiteStukke.size())
             break;
         ++i;
     }
-    std::cout << "\n\n";
+    std::cout << "\n";
 }
 
 int main()
@@ -72,13 +72,12 @@ int main()
             "e4\t Dh5\t TXg4\t e4Xd5\t f8=D\t 0-0\t e5Xd5 e.p.\n"
             "Th1-e1\t Th4+\t Kf4++\t c7 mat\t d2 pat\t Gee oor.\n\n\n";
 
-        bool isWit { true };
-
         stukArray_t stukke;
         bordArray_t bord;
         inisialiseerStukke(stukke);
         inisialiseerBord(bord, stukke);
 
+        bool isWit { true };
         tekenBord(isWit, bord);
 
         std::string skuif {};
