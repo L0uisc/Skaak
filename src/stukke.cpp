@@ -2,7 +2,20 @@
 #include "stukke.h"
 #include "bord.h"
 
-Soort bepaalSoort(uint_t gelid, uint_t ry)
+Soort bepaalSoort(char letter)
+{
+    switch (letter)
+    {
+        case 'T':   return Soort::TORING;
+        case 'R':   return Soort::RUITER;
+        case 'L':   return Soort::LOPER;
+        case 'D':   return Soort::DAME;
+        case 'K':   return Soort::KONING;
+        default:    return Soort::PION;
+    }
+}
+
+Soort bepaalSoort(int gelid, int ry)
 {
     switch (gelid < 2u ? gelid : 3u - gelid)
     {
@@ -17,19 +30,6 @@ Soort bepaalSoort(uint_t gelid, uint_t ry)
         default:    return Soort::ONBEKEND;
         }
     default:        return Soort::PION;
-    }
-}
-
-Soort bepaalSoort(char letter)
-{
-    switch (letter)
-    {
-        case 'T':   return Soort::TORING;
-        case 'R':   return Soort::RUITER;
-        case 'L':   return Soort::LOPER;
-        case 'D':   return Soort::DAME;
-        case 'K':   return Soort::KONING;
-        default:    return Soort::PION;
     }
 }
 
@@ -49,10 +49,10 @@ char bepaalLetter (const Stuk* const stuk)
 
 void inisialiseerStukke(stukArray_t &stukke)
 {
-    for (uint_t i { 0u }; i < g_aantalStukke; ++i)
+    for (int i { 0u }; i < g_aantalStukke; ++i)
     {
-        uint_t gelid { i / g_sylengte };
-        uint_t ry { i % g_sylengte };
+        int gelid { i / g_sylengte };
+        int ry { i % g_sylengte };
 
         stukke.at(i).soort = bepaalSoort(gelid, ry);
         stukke.at(i).isWit = gelid < 2u;

@@ -6,9 +6,9 @@
 
 void inisialiseerBord(bordArray_t &bord, stukArray_t &stukke)
 {
-    for (uint_t gelid { 0u }; gelid < g_sylengte; ++gelid)
+    for (int gelid { 0u }; gelid < g_sylengte; ++gelid)
     {
-        for (uint_t ry { 0u }; ry < g_sylengte; ++ry)
+        for (int ry { 0u }; ry < g_sylengte; ++ry)
         {
             Blokkie *blokkie { &bord.at(gelid).at(ry) };
 
@@ -16,7 +16,7 @@ void inisialiseerBord(bordArray_t &bord, stukArray_t &stukke)
 
             if (gelid < 2u || gelid >= 6u)
             {
-                uint_t stukIndeks { g_sylengte * (gelid < 2u ?  gelid : gelid- 4u) +
+                int stukIndeks { g_sylengte * (gelid < 2u ?  gelid : gelid- 4u) +
                                       ry % g_sylengte };
                 blokkie->stuk = &stukke.at(stukIndeks);
             }
@@ -28,7 +28,7 @@ void inisialiseerBord(bordArray_t &bord, stukArray_t &stukke)
     }
 }
 
-void tekenBlokkie(uint_t gelid, uint_t ry, bordArray_t &bord)
+void tekenBlokkie(int gelid, int ry, bordArray_t &bord)
 {
     Blokkie* blokkie { &bord.at(gelid).at(ry) };
     std::cout << ((blokkie->stuk) ? (bepaalLetter(blokkie->stuk)) : (blokkie->agtergrond));
@@ -69,7 +69,7 @@ void tekenBord(bool isWit, bordArray_t &bord)
                 isWit ? ++ry : --ry)
         {
 // TODO (User#1#): Pass Blokkie* i.p.v. ry, gelid en bord.
-            tekenBlokkie(static_cast<uint_t>(gelid), static_cast<uint_t>(ry), bord);
+            tekenBlokkie(static_cast<int>(gelid), static_cast<int>(ry), bord);
             std::cout << " |";
         }
 

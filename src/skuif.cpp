@@ -9,8 +9,8 @@
 
 struct Koordinaat
 {
-    uint_t gelid    { 8u };
-    uint_t ry       { 0u };
+    int gelid    { 8u };
+    int ry       { 0u };
 };
 
 namespace Skuif
@@ -231,9 +231,9 @@ Koordinaat mapStringNaKoordinaat(const std::string &koordinaat)
 {
     Koordinaat resultaat {};
     // Map 'a' na 0, 'b' na 1, ens.
-    resultaat.ry = static_cast<uint_t>(koordinaat[0u] - ('a'));
+    resultaat.ry = static_cast<int>(koordinaat[0u] - ('a'));
     // Map '1' na 0, '2' na 1, ens.
-    resultaat.gelid = static_cast<uint_t>(koordinaat[1u] - ('1'));
+    resultaat.gelid = static_cast<int>(koordinaat[1u] - ('1'));
     return resultaat;
 }
 
@@ -292,8 +292,8 @@ void geeFoutboodskap(Fout fout, bool geldigRoep=false, int pos=0)
                 "'n Pion kan slegs en passant buit vanaf sy vyfde gelid na sy sesde gelid.";
             break;
         case Fout::TE_VEEL_KOORDINATE:
-            foutboodskap = "te veel koördinate in die skuif.\n"
-                "'n Skuif kan 'n maksimum van twee koördinate bevat: een oorsprong en een bestemming.";
+            foutboodskap = "te veel koï¿½rdinate in die skuif.\n"
+                "'n Skuif kan 'n maksimum van twee koï¿½rdinate bevat: een oorsprong en een bestemming.";
             break;
         case Fout::TE_VEEL_BUIT:
             foutboodskap = "te veel buitsimbole ('X') in die skuif.\n"
@@ -336,7 +336,7 @@ bool isGeldig(bool isWit, const std::string &skuif)
 {
     Skuif::g_beginPos.gelid = 8u;
     Skuif::g_eindPos.gelid  = 8u;
-    const uint_t skuifLengte { skuif.length() };
+    const int skuifLengte { static_cast<int>(skuif.length()) };
     Fout fout;
     bool geldig { (skuifLengte >= 2u) || (skuifLengte <= 14u) };
     if (!geldig)
@@ -354,7 +354,7 @@ bool isGeldig(bool isWit, const std::string &skuif)
         Karakter vorige { Karakter::BEGIN };
         bool promoveerOpLaasteGelid { false };
         std::string stert {};
-        for (uint_t k { 0u }; k < skuifLengte; ++k)
+        for (int k { 0u }; k < skuifLengte; ++k)
         {
             if (!geldig)
                 break;
@@ -377,7 +377,7 @@ bool isGeldig(bool isWit, const std::string &skuif)
                 geldig = isGelid(skuif[k]);
                 break;
 
-            case Karakter::GELID:  // Voer uit as huidige karakter (skuif[k]) op 'n koördinaat volg.
+            case Karakter::GELID:  // Voer uit as huidige karakter (skuif[k]) op 'n koï¿½rdinaat volg.
                 geldig = ((isBuit(skuif[k]) || isKoppelteken(skuif[k]))
                           && (buitTal + koppeltekenTal) == 0) || isSpasie(skuif[k])
                           || (isPromoveer(skuif[k]) && koordinaatTal <= 2) || isSkaak(skuif[k]);
@@ -392,8 +392,8 @@ bool isGeldig(bool isWit, const std::string &skuif)
                 break;
 
             case Karakter::PROMOVEER:  // Voer uit as huidige karakter (skuif[k]) op 'n '=' volg.
-                // 'n Pion kan net promoveer op die laaste gelid. As die koördinaat 'n ander gelid gee,
-                // lê die fout reeds by daardie karakter in die skuifstring.
+                // 'n Pion kan net promoveer op die laaste gelid. As die koï¿½rdinaat 'n ander gelid gee,
+                // lï¿½ die fout reeds by daardie karakter in die skuifstring.
                 promoveerOpLaasteGelid = isLaasteGelid(isWit, skuif[k - 2u]);
                 if (!promoveerOpLaasteGelid)
                     k -= 2u;
@@ -511,8 +511,8 @@ bool isGeldig(bool isWit, const std::string &skuif)
     }
     else if (Skuif::g_eindPos.gelid == 8u)
     {
-        // Nodig om die eindposisie se koördinaat nog te stel.
-        for (uint_t k { 0u }; k < skuifLengte - 1u; ++k)
+        // Nodig om die eindposisie se koordinaat nog te stel.
+        for (int k { 0u }; k < skuifLengte - 1u; ++k)
         {
             if (isRy(skuif[k]))
             {
@@ -531,10 +531,10 @@ Koordinaat soekStuk(Koordinaat rigting, Koordinaat beginpos, bordArray_t &bord,
     int teller { 1 };
     Koordinaat soekPos { beginpos.gelid + rigting.gelid, beginpos.ry + rigting.ry };
 
-    // Sorg dat die koördinate nie af van die bord af gaan nie.
+    // Sorg dat die koï¿½rdinate nie af van die bord af gaan nie.
     while (soekPos.gelid < g_sylengte && soekPos.ry < g_sylengte)
     {
-        // As daar 'n stuk is op die posisie, return die koördinaat.
+        // As daar 'n stuk is op die posisie, return die koï¿½rdinaat.
         if (bord[soekPos.gelid][soekPos.ry].stuk)
             return soekPos;
 
@@ -621,8 +621,8 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
         // 'n Ruiter kan spring, so nie nodig om vir ruiters the toets nie.
         if (soort != Soort::RUITER)
         {
-            uint_t gelid   { g_eindPos.gelid - g_beginPos.gelid };
-            uint_t ry      { g_eindPos.ry - g_beginPos.ry };
+            int gelid   { g_eindPos.gelid - g_beginPos.gelid };
+            int ry      { g_eindPos.ry - g_beginPos.ry };
 
             Koordinaat res { soekStuk({ gelid, ry }, g_beginPos, bord) };
             resultaat = resultaat && res.gelid == g_eindPos.gelid
@@ -642,8 +642,8 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
                 for (int ry { (gelid - 1) % 2 }; ry <= 1; ry +=2)
                 {
                     resultaat = soekBeginPos(isWit, resultaat, soort
-                                             , { static_cast<uint_t>(gelid)
-                                             , static_cast<uint_t>(ry) }
+                                             , { static_cast<int>(gelid)
+                                             , static_cast<int>(ry) }
                                              , bord, skuif);
                 }
             }
@@ -657,8 +657,8 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
                 for (int ry { -1 }; ry <= 1; ry +=2)
                 {
                     resultaat = soekBeginPos(isWit, resultaat, soort
-                                             , { static_cast<uint_t>(gelid)
-                                             , static_cast<uint_t>(ry) }
+                                             , { static_cast<int>(gelid)
+                                             , static_cast<int>(ry) }
                                              , bord, skuif);
                 }
             }
@@ -677,8 +677,8 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
                 for (int ry { -1 }; ry <= 1; ry += 2)
                 {
                     resultaat = soekBeginPos(isWit, resultaat, soort
-                                             , { static_cast<uint_t>(gelid)
-                                             ,   static_cast<uint_t>(ry
+                                             , { static_cast<int>(gelid)
+                                             ,   static_cast<int>(ry
                                                     * vermenigvuldiger) }
                                              , bord, skuif);
                 }
@@ -691,7 +691,7 @@ bool bepaalBeginPos(bool isWit, const std::string &skuif, bordArray_t &bord)
             int gelid { isWit ? -1 : 1 };
 
             resultaat = soekBeginPos(isWit, resultaat, soort
-                                     , { static_cast<uint_t>(gelid), 0u }
+                                     , { static_cast<int>(gelid), 0u }
                                      , bord, skuif);
         }
 
@@ -717,8 +717,8 @@ bool isRuitersBedreiging(bool isWit, Koordinaat koord, bordArray_t &bord)
 
         for (int gelidVerpl { -1 }; gelidVerpl <= 1; gelidVerpl += 2)
         {
-            Koordinaat pos { soekStuk({ static_cast<uint_t>(gelidVerpl
-                * vermenigvuldiger), static_cast<uint_t>(ryVerpl) }
+            Koordinaat pos { soekStuk({ static_cast<int>(gelidVerpl
+                * vermenigvuldiger), static_cast<int>(ryVerpl) }
                 ,koord, bord, 1) };
 
             if (pos.gelid != g_sylengte)
@@ -741,8 +741,8 @@ bool isDiagonaleBedreiging(bool isWit, Koordinaat koordinaat, bordArray_t &bord)
     {
         for (int ry { -1 }; ry <= 1; ry += 2)
         {
-            Koordinaat pos { soekStuk({static_cast<uint_t>(gelid)
-                                      ,static_cast<uint_t>(ry)}
+            Koordinaat pos { soekStuk({static_cast<int>(gelid)
+                                      ,static_cast<int>(ry)}
                                       ,koordinaat, bord) };
 
             if (pos.gelid != g_sylengte)
@@ -776,8 +776,8 @@ bool isParallelleBedreiging(bool isWit, Koordinaat koordinaat, bordArray_t &bord
     {
         for (int ry { (gelid - 1) % 2 }; ry <= -ry; ry += 2)
         {
-            Koordinaat pos { soekStuk({static_cast<uint_t>(gelid)
-                                      ,static_cast<uint_t>(ry)}
+            Koordinaat pos { soekStuk({static_cast<int>(gelid)
+                                      ,static_cast<int>(ry)}
                                       ,koordinaat, bord) };
 
             if (pos.gelid != g_sylengte)
@@ -852,7 +852,7 @@ bool isWettig(bool isWit, const std::string &skuif, bordArray_t &bord)
 
         // Inisialiseer met die resultaat of die koning al geskuif het.
         wettig = isWit ? witKoning : swartKoning;
-        const uint_t gelid { isWit ? 0u : 7u };
+        const int gelid { isWit ? 0u : 7u };
 
         if (wettig)   // As die eerste toets slaag...
         {
@@ -1037,7 +1037,7 @@ void doenSkuif(bool isWit, const std::string &skuif, bordArray_t &bord,
 {
     if (isRokeer(skuif))
     {
-        const uint_t gelid { isWit ? 0u : 7u };
+        const int gelid { isWit ? 0u : 7u };
 
         using namespace Skuif;
         Koordinaat& koningPos { isWit ? g_witKoningPos : g_swartKoningPos };

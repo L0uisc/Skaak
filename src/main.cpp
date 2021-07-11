@@ -51,7 +51,7 @@ bool speelWeer()
 void tekenGebuiteStukke(const buitVector_t &gebuiteStukke)
 {
     std::cout << "\t";
-    uint_t i { 1u };
+    int i { 1u };
     for (auto stuk : gebuiteStukke)
     {
         std::cout << bepaalLetter(stuk);
